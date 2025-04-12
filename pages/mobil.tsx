@@ -1,4 +1,4 @@
-// pages/mobil.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import api from "../lib/axios";
@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Tambahkan Input dari UI library
+import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Trash2, X } from "lucide-react"; // Tambahkan ikon X untuk reset
+import { AlertCircle, Trash2, X } from "lucide-react";
 
 interface Mobil {
   id_mobil: number;
@@ -41,7 +41,6 @@ export default function Mobil() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] =
     useState<boolean>(false);
   const [mobilIdToDelete, setMobilIdToDelete] = useState<number | null>(null);
-  // State untuk filter
   const [filterMerk, setFilterMerk] = useState<string>("");
   const [filterModel, setFilterModel] = useState<string>("");
   const router = useRouter();
@@ -50,16 +49,14 @@ export default function Mobil() {
     try {
       setLoading(true);
       const res = await api.get("/mobil");
-      console.log("API Response from /mobil:", res.data);
-      if (typeof res.data === "string") {
-        console.error("Received HTML instead of JSON:", res.data);
-        throw new Error("Invalid response format");
-      }
       const data = Array.isArray(res.data) ? res.data : [];
-      console.log("Set mobils to:", data);
       setMobils(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching mobils:", error);
+      setError(
+        error.response?.data?.message ||
+          "Gagal mengambil data mobil. Silakan coba lagi."
+      );
       router.push("/");
     } finally {
       setLoading(false);
@@ -100,14 +97,13 @@ export default function Mobil() {
     }
 
     try {
-      const response = await api.post("/mobil", {
+      await api.post("/mobil", {
         merk,
         model,
         tahun,
         gambar,
         harga_sewa_per_hari: hargaSewaPerHari,
       });
-      console.log("Add mobil response:", response.data);
       await fetchMobils();
       setMerk("");
       setModel("");
@@ -115,9 +111,12 @@ export default function Mobil() {
       setGambar("");
       setHargaSewaPerHari(0);
       setIsCardOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding mobil:", error);
-      setError("Gagal menambahkan mobil. Silakan coba lagi.");
+      setError(
+        error.response?.data?.message ||
+          "Gagal menambahkan mobil. Silakan coba lagi."
+      );
     }
   };
 
@@ -133,9 +132,12 @@ export default function Mobil() {
       setMobils(mobils.filter((m) => m.id_mobil !== mobilIdToDelete));
       setIsDeleteConfirmOpen(false);
       setMobilIdToDelete(null);
-    } catch (error) {
-      console.error(error);
-      setError("Gagal menghapus mobil. Silakan coba lagi.");
+    } catch (error: any) {
+      console.error("Error deleting mobil:", error);
+      setError(
+        error.response?.data?.message ||
+          "Gagal menghapus mobil. Silakan coba lagi."
+      );
       setIsDeleteConfirmOpen(false);
     }
   };
@@ -176,13 +178,11 @@ export default function Mobil() {
     setError(null);
   };
 
-  // Fungsi untuk mereset filter
   const resetFilters = () => {
     setFilterMerk("");
     setFilterModel("");
   };
 
-  // Filter mobil berdasarkan merk dan model
   const filteredMobils = mobils.filter((mobil) => {
     const matchesMerk = filterMerk
       ? mobil.merk.toLowerCase().includes(filterMerk.toLowerCase())
@@ -220,7 +220,6 @@ export default function Mobil() {
             </Button>
           </div>
 
-          {/* Filter Section */}
           <div className="my-7 flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -251,8 +250,7 @@ export default function Mobil() {
                 onClick={resetFilters}
                 variant="outline"
                 className="border-gray-300 text-gray-700 hover:bg-gray-100 flex items-center"
-                disabled={!filterMerk && !filterModel} // Disable jika tidak ada filter
-              >
+                disabled={!filterMerk && !filterModel}>
                 <X className="w-4 h-4 mr-2" />
                 Reset Filter
               </Button>
